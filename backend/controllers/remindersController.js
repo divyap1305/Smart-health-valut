@@ -158,13 +158,13 @@ const { sendSms, twilioMissing } = require('../utils/twilio');
 const checkDueReminders = async () => {
     try {
         const now = new Date();
-        const dueDate = new Date(now.getTime() + 30 * 60 * 1000); // Next 30 minutes
-        const lowerBound = new Date(now.getTime() - 15 * 60 * 1000); // Include 15 minutes past to catch slight delays
+        const grace = 60 * 1000; // 1 minute grace window after scheduled time
+        const lowerBound = new Date(now.getTime() - grace);
 
-        console.log(`Checking due reminders between ${lowerBound.toISOString()} and ${dueDate.toISOString()}`);
+        console.log(`Checking due reminders scheduled up to now (<= ${now.toISOString()}) and not older than ${lowerBound.toISOString()}`);
 
         const dueReminders = await Reminder.find({
-            scheduledFor: { $lte: dueDate, $gte: lowerBound },
+            scheduledFor: { $lte: now, $gte: lowerBound },
             status: 'Pending'
         }).populate('userId', 'email fullName phone');
 
@@ -184,7 +184,9 @@ const checkDueReminders = async () => {
                         console.warn('Twilio is not configured; cannot send SMS. Set TWILIO_* env vars and install `twilio` package.');
                     } else {
                         const to = user.phone;
-                        const body = `${reminder.title} - ${reminder.description || ''} Scheduled at: ${reminder.scheduledFor.toLocaleString()}`;
+                        const scheduled = reminder.scheduledFor.toLocaleString();
+                        const descPart = reminder.description ? ` ${reminder.description}.` : '';
+                        const body = `Smart Health Vault Reminder: ${reminder.title}.${descPart} Scheduled for ${scheduled}.`;
                         console.log(`Attempting to send SMS for reminder ${reminder._id} to ${to}`);
                         const message = await sendSms({ to, body });
                         console.log(`Sent SMS for reminder ${reminder._id} to ${to}, sid=${message.sid}, status=${message.status}`);
@@ -198,17 +200,17 @@ const checkDueReminders = async () => {
                             body: body,
                             sentAt: new Date()
                         };
+
+                        // If this is a one-time reminder, mark as Completed immediately
+                        if (reminder.recurrence === 'Once') {
+                            reminder.status = 'Completed';
+                        }
+
                         await reminder.save();
                     }
                 }
 
                 // TODO: implement Push / Email sending when required
-
-                // For one-time reminders, mark as Completed after sending
-                if (reminder.recurrence === 'Once') {
-                    reminder.status = 'Completed';
-                    await reminder.save();
-                }
 
             } catch (err) {
                 console.error(`Error processing reminder ${reminder._id}:`, err);

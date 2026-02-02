@@ -8,6 +8,7 @@ import {
     UserGroupIcon,
     ExclamationTriangleIcon,
     HeartIcon,
+    BeakerIcon,
     InformationCircleIcon
 } from '@heroicons/react/24/outline';
 
@@ -15,7 +16,6 @@ const PrivacyControls = () => {
     const [visibilitySettings, setVisibilitySettings] = useState({
         bloodGroup: true,
         allergies: true,
-        chronicConditions: true,
         currentMedications: true,
         emergencyContacts: true
     });
@@ -32,7 +32,12 @@ const PrivacyControls = () => {
             setLoading(true);
             const response = await emergencyAPI.getProfile();
             if (response.data.profile) {
-                setVisibilitySettings(response.data.profile.visibilitySettings || {});
+                const vs = { ...(response.data.profile.visibilitySettings || {}) };
+                // Remove legacy field if present
+                if (vs && Object.prototype.hasOwnProperty.call(vs, 'chronicConditions')) {
+                    delete vs.chronicConditions;
+                }
+                setVisibilitySettings(vs);
                 setAccessLogs(response.data.accessLogs || []);
             }
         } catch (error) {
@@ -52,7 +57,12 @@ const PrivacyControls = () => {
     const handleSave = async () => {
         try {
             setSaving(true);
-            await emergencyAPI.updateVisibility(visibilitySettings);
+            // Ensure legacy keys are not sent
+            const payload = { ...visibilitySettings };
+            if (Object.prototype.hasOwnProperty.call(payload, 'chronicConditions')) {
+                delete payload.chronicConditions;
+            }
+            await emergencyAPI.updateVisibility(payload);
             alert('Privacy settings updated successfully!');
         } catch (error) {
             console.error('Update settings error:', error);
@@ -66,7 +76,7 @@ const PrivacyControls = () => {
         const descriptions = {
             bloodGroup: 'Your blood type - critical for transfusions',
             allergies: 'Allergies and adverse reactions - prevents medication errors',
-            chronicConditions: 'Long-term health conditions - important for treatment decisions',
+
             currentMedications: 'Current prescriptions - prevents drug interactions',
             emergencyContacts: 'Trusted contacts to notify in emergencies'
         };
@@ -174,6 +184,32 @@ const PrivacyControls = () => {
                                         >
                                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
                                                 visibilitySettings.allergies ? 'translate-x-6' : 'translate-x-1'
+                                            }`} />
+                                        </button>
+                                    </div>
+                                </div>
+                                {/* Current Medications */}
+                                <div className="px-6 py-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="p-2 bg-indigo-100 rounded-lg">
+                                                <BeakerIcon className="h-5 w-5 text-indigo-600" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-medium text-gray-900">Current Medications</h3>
+                                                <p className="text-sm text-gray-600">
+                                                    {getFieldDescription('currentMedications')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => handleToggle('currentMedications')}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full ${
+                                                visibilitySettings.currentMedications ? 'bg-blue-600' : 'bg-gray-200'
+                                            }`}
+                                        >
+                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                                                visibilitySettings.currentMedications ? 'translate-x-6' : 'translate-x-1'
                                             }`} />
                                         </button>
                                     </div>
@@ -293,6 +329,7 @@ const PrivacyControls = () => {
                                     <ul className="text-sm text-gray-700 space-y-2">
                                         <li>• Enable only critical information for emergencies</li>
                                         <li>• Review access logs regularly</li>
+
                                         <li>• Share QR code only with trusted individuals</li>
                                         <li>• Keep emergency contacts updated</li>
                                     </ul>

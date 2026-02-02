@@ -21,7 +21,6 @@ const EmergencyCard = () => {
     const [formData, setFormData] = useState({
         bloodGroup: '',
         allergies: [{ name: '', severity: '', reaction: '' }],
-        chronicConditions: [{ name: '', diagnosedDate: '', currentStatus: '' }],
         currentMedications: [{ name: '', dosage: '', frequency: '', purpose: '' }],
         emergencyContacts: [{ name: '', relationship: '', phone: '', isPrimary: true }]
     });
@@ -39,16 +38,13 @@ const EmergencyCard = () => {
 
                 setFormData({
                     bloodGroup: profile.bloodGroup || '',
-                    allergies: profile.allergies.length > 0 
+                    allergies: profile.allergies && profile.allergies.length > 0 
                         ? profile.allergies 
                         : [{ name: '', severity: '', reaction: '' }],
-                    chronicConditions: profile.chronicConditions.length > 0
-                        ? profile.chronicConditions
-                        : [{ name: '', diagnosedDate: '', currentStatus: '' }],
-                    currentMedications: profile.currentMedications.length > 0
+                    currentMedications: profile.currentMedications && profile.currentMedications.length > 0
                         ? profile.currentMedications
                         : [{ name: '', dosage: '', frequency: '', purpose: '' }],
-                    emergencyContacts: profile.emergencyContacts.length > 0
+                    emergencyContacts: profile.emergencyContacts && profile.emergencyContacts.length > 0
                         ? profile.emergencyContacts
                         : [{ name: '', relationship: '', phone: '', isPrimary: true }]
                 });
@@ -106,8 +102,7 @@ const EmergencyCard = () => {
         switch(section) {
             case 'allergies':
                 return { name: '', severity: '', reaction: '' };
-            case 'chronicConditions':
-                return { name: '', diagnosedDate: '', currentStatus: '' };
+
             case 'currentMedications':
                 return { name: '', dosage: '', frequency: '', purpose: '' };
             case 'emergencyContacts':

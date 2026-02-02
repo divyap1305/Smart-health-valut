@@ -146,9 +146,7 @@ const getPublicEmergencyProfile = async (req, res) => {
         if (emergencyProfile.visibilitySettings.allergies && emergencyProfile.allergies.length > 0) {
             visibleData.emergencyData.allergies = emergencyProfile.allergies;
         }
-        if (emergencyProfile.visibilitySettings.chronicConditions && emergencyProfile.chronicConditions.length > 0) {
-            visibleData.emergencyData.chronicConditions = emergencyProfile.chronicConditions;
-        }
+
         if (emergencyProfile.visibilitySettings.currentMedications && emergencyProfile.currentMedications.length > 0) {
             visibleData.emergencyData.currentMedications = emergencyProfile.currentMedications;
         }
@@ -248,7 +246,21 @@ const getPrivateEmergencyProfile = async (req, res) => {
 const updateVisibilitySettings = async (req, res) => {
     try {
         const userId = req.user.uid;
-        const { visibilitySettings } = req.body;
+        // Accept either { visibilitySettings: {...} } or raw settings object in body
+        const visibilitySettings = req.body.visibilitySettings || req.body;
+
+        // Validate payload
+        const validFields = ['bloodGroup', 'allergies', 'currentMedications', 'emergencyContacts'];
+        if (!visibilitySettings || typeof visibilitySettings !== 'object') {
+            return res.status(400).json({ error: 'Invalid visibility settings' });
+        }
+        const isValid = Object.keys(visibilitySettings).every(key => 
+            validFields.includes(key) && typeof visibilitySettings[key] === 'boolean'
+        );
+
+        if (!isValid) {
+            return res.status(400).json({ error: 'Invalid visibility settings' });
+        }
 
         const user = await User.findOne({ firebaseUid: userId });
         if (!user) {

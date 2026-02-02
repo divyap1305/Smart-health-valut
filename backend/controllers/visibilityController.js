@@ -19,7 +19,6 @@ const getVisibilitySettings = async (req, res) => {
                 visibilitySettings: {
                     bloodGroup: true,
                     allergies: true,
-                    chronicConditions: true,
                     currentMedications: true,
                     emergencyContacts: true
                 }
@@ -42,7 +41,7 @@ const updateVisibilitySettings = async (req, res) => {
         const { visibilitySettings } = req.body;
 
         // Validate visibility settings
-        const validFields = ['bloodGroup', 'allergies', 'chronicConditions', 'currentMedications', 'emergencyContacts'];
+        const validFields = ['bloodGroup', 'allergies', 'currentMedications', 'emergencyContacts'];
         const isValid = Object.keys(visibilitySettings).every(key => 
             validFields.includes(key) && typeof visibilitySettings[key] === 'boolean'
         );
@@ -134,7 +133,6 @@ const resetVisibilitySettings = async (req, res) => {
         const defaultSettings = {
             bloodGroup: true,
             allergies: true,
-            chronicConditions: true,
             currentMedications: true,
             emergencyContacts: true
         };

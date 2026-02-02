@@ -19,11 +19,6 @@ const emergencyProfileSchema = new mongoose.Schema({
         severity: String,
         reaction: String
     }],
-    chronicConditions: [{
-        name: String,
-        diagnosedDate: Date,
-        currentStatus: String
-    }],
     currentMedications: [{
         name: String,
         dosage: String,
@@ -40,7 +35,6 @@ const emergencyProfileSchema = new mongoose.Schema({
     visibilitySettings: {
         bloodGroup: { type: Boolean, default: true },
         allergies: { type: Boolean, default: true },
-        chronicConditions: { type: Boolean, default: true },
         currentMedications: { type: Boolean, default: true },
         emergencyContacts: { type: Boolean, default: true }
     },
