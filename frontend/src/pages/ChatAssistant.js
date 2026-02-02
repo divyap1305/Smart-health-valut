@@ -60,16 +60,23 @@ const ChatAssistant = () => {
             timestamp: new Date()
         }]);
 
-        // Get bot response
+        // Get bot response: try AI endpoint first, fall back to rule-based
         try {
             setLoading(true);
-            const response = await chatAPI.sendMessage(userMessage);
-            
+            let botText = null;
+            try {
+                const aiResp = await chatAPI.aiChat(userMessage);
+                botText = aiResp.data.answer;
+            } catch (aiErr) {
+                // fallback to local rule-based chatbot
+                const resp = await chatAPI.sendMessage(userMessage);
+                botText = resp.data.response;
+            }
+
             setMessages(prev => [...prev, {
                 type: 'bot',
-                text: response.data.response,
-                category: response.data.category,
-                timestamp: new Date(response.data.timestamp)
+                text: botText,
+                timestamp: new Date()
             }]);
         } catch (error) {
             console.error('Chat error:', error);

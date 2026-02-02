@@ -97,7 +97,8 @@ export const recordsAPI = {
 // Chat API calls
 export const chatAPI = {
     getIntro: () => api.get('/chat/intro'),
-    sendMessage: (message) => api.post('/chat/message', { message })
+    sendMessage: (message) => api.post('/chat/message', { message }),
+    aiChat: (message) => api.post('/chat/ai', { message })
 };
 // Visibility API calls
 export const visibilityAPI = {

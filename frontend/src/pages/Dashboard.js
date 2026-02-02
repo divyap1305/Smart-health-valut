@@ -10,7 +10,7 @@ import {
     CalendarIcon,
     ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline';
-import { emergencyAPI, recordsAPI, remindersAPI } from '../utils/api';
+import { emergencyAPI, recordsAPI, remindersAPI, authAPI } from '../utils/api';
 
 const Dashboard = () => {
     const [stats, setStats] = useState({
@@ -19,6 +19,7 @@ const Dashboard = () => {
         remindersCount: 0,
         recentAccesses: []
     });
+    const [userName, setUserName] = useState('');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -29,6 +30,15 @@ const Dashboard = () => {
         try {
             setLoading(true);
             
+            // Fetch user profile for greeting
+            try {
+                const userRes = await authAPI.getProfile();
+                const name = userRes?.data?.user?.fullName || userRes?.data?.user?.email || '';
+                setUserName(name);
+            } catch (e) {
+                console.warn('Failed to fetch auth profile for greeting:', e);
+            }
+
             // Fetch emergency profile
             const emergencyRes = await emergencyAPI.getProfile();
             
@@ -98,7 +108,7 @@ const Dashboard = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">{userName ? `Welcome Back, ${userName}` : 'Dashboard'}</h1>
                     <p className="mt-2 text-gray-600">Your health information at a glance</p>
                 </div>
 

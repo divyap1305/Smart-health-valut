@@ -346,14 +346,7 @@ const Register = () => {
                                 </div>
                             </div>
 
-                            <div className="mt-8 pt-6 border-t border-blue-500">
-                                <p className="text-sm text-blue-200">
-                                    Already have an account?{' '}
-                                    <Link to="/login" className="font-semibold text-white hover:text-blue-100">
-                                        Sign in here
-                                    </Link>
-                                </p>
-                            </div>
+                          
                         </div>
 
                         {/* Right Side - Registration Form */}

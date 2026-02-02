@@ -1,4 +1,5 @@
 // Rule-based wellness chatbot
+const axios = require('axios');
 const wellnessResponses = {
     // Stress-related keywords
     stress: [
@@ -116,4 +117,49 @@ const getChatbotIntro = (req, res) => {
     res.json(intro);
 };
 
-module.exports = { wellnessChatbot, getChatbotIntro };
+// AI-backed chat handler (proxies to OpenRouter API)
+const aiChat = async (req, res) => {
+    try {
+        const { message } = req.body;
+        if (!message || typeof message !== 'string') {
+            return res.status(400).json({ error: 'Valid message required' });
+        }
+
+        const apiKey = process.env.OPENROUTER_API_KEY;
+        if (!apiKey) {
+            return res.status(501).json({ error: 'AI provider not configured' });
+        }
+
+        const payload = {
+            model: process.env.OPENROUTER_MODEL || 'openai/gpt-4o-mini',
+            messages: [
+                { role: 'system', content: 'You are a wellness chatbot. Give short helpful health and mental wellness tips.' },
+                { role: 'user', content: message }
+            ]
+        };
+
+        const response = await axios.post(
+            'https://openrouter.ai/api/v1/chat/completions',
+            payload,
+            {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                timeout: 15000
+            }
+        );
+
+        const answer = response.data?.choices?.[0]?.message?.content || null;
+        if (!answer) {
+            return res.status(502).json({ error: 'Invalid response from AI provider' });
+        }
+
+        res.json({ answer, model: payload.model, timestamp: new Date().toISOString() });
+    } catch (err) {
+        console.error('AI chat error:', err.message || err);
+        res.status(500).json({ error: 'AI chat failed' });
+    }
+};
+
+module.exports = { wellnessChatbot, getChatbotIntro, aiChat };
