@@ -71,33 +71,44 @@ const Register = () => {
     };
 
     const validateStep1 = () => {
-        if (!formData.fullName.trim()) {
-            setError('Please enter your full name');
-            return false;
-        }
-        if (!formData.email.trim()) {
-            setError('Please enter your email address');
-            return false;
-        }
-        if (!isValidEmailStrict(formData.email)) {
-            setError('Please enter a valid email address');
-            return false;
-        }
-        if (!formData.password) {
-            setError('Please enter a password');
-            return false;
-        }
-        if (formData.password.length < 8) {
-            setError('Password must be at least 8 characters long');
-            return false;
-        }
-        if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
-            return false;
-        }
-        return true;
-    };
-
+    if (!formData.fullName.trim()) {
+        setError('Please enter your full name');
+        return false;
+    }
+    
+    if (!formData.email.trim()) {
+        setError('Please enter your email address');
+        return false;
+    }
+    
+    if (!isValidEmailStrict(formData.email)) {
+        setError('Please enter a valid email address');
+        return false;
+    }
+    
+    // ✅ ADD THIS GMAIL RESTRICTION LINE
+    if (!formData.email.toLowerCase().endsWith('@gmail.com')) {
+        setError('Only correct Gmail addresses are allowed (e.g., yourname@gmail.com)');
+        return false;
+    }
+    
+    if (!formData.password) {
+        setError('Please enter a password');
+        return false;
+    }
+    
+    if (formData.password.length < 8) {
+        setError('Password must be at least 8 characters long');
+        return false;
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match');
+        return false;
+    }
+    
+    return true;
+};
     // Validate optional fields presented in step 2 before submit
     const validateStep2 = () => {
         if (formData.phone && formData.phone.trim()) {
